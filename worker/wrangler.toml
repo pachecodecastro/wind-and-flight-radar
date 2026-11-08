@@ -1,0 +1,6 @@
+name = "rdv-flights"
+main = "flights-proxy.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+ALLOWED_ORIGINS = "https://quintopontocardeal.org,https://pachecodecastro.github.io"

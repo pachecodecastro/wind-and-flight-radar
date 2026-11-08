@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#102B40"/>
+  <g transform="translate(256 256) scale(1.05)">
+    <circle r="150" fill="none" stroke="#2E5A7A" stroke-width="12"/>
+    <g fill="#7FA6C4">
+      <path d="M0 -118L20 -20L0 0Z" transform="rotate(45)"/><path d="M0 -118L20 -20L0 0Z" transform="rotate(135)"/>
+      <path d="M0 -118L20 -20L0 0Z" transform="rotate(225)"/><path d="M0 -118L20 -20L0 0Z" transform="rotate(315)"/>
+    </g>
+    <g fill="#5C86A6">
+      <path d="M0 -118L-20 -20L0 0Z" transform="rotate(45)"/><path d="M0 -118L-20 -20L0 0Z" transform="rotate(135)"/>
+      <path d="M0 -118L-20 -20L0 0Z" transform="rotate(225)"/><path d="M0 -118L-20 -20L0 0Z" transform="rotate(315)"/>
+    </g>
+    <path d="M0 -190L34 -34L0 0Z" fill="#FFD166"/><path d="M0 -190L-34 -34L0 0Z" fill="#FFB81C"/>
+    <g fill="#EAF2F7"><path d="M0 -190L34 -34L0 0Z" transform="rotate(90)"/><path d="M0 -190L34 -34L0 0Z" transform="rotate(180)"/><path d="M0 -190L34 -34L0 0Z" transform="rotate(270)"/></g>
+    <g fill="#B9CCDA"><path d="M0 -190L-34 -34L0 0Z" transform="rotate(90)"/><path d="M0 -190L-34 -34L0 0Z" transform="rotate(180)"/><path d="M0 -190L-34 -34L0 0Z" transform="rotate(270)"/></g>
+  </g>
+</svg>

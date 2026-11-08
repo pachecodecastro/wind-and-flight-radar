@@ -1,0 +1,16 @@
+{
+  "name": "wind-and-flight-radar",
+  "version": "1.0.0",
+  "description": "Animated wind and temperature map with a live flight radar. No framework, installable on phones.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "author": "Tiago Castro",
+  "scripts": {
+    "start": "npx --yes http-server . -p 8080 -c-1",
+    "build:standalone": "node tools/build-standalone.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
