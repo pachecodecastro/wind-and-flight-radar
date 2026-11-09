@@ -41,6 +41,10 @@ HTML, CSS and JavaScript (ES modules), Leaflet for the map, canvas for the parti
 
 **Basemap.** Coastlines and borders are Natural Earth 1:50m data from the `world-atlas` TopoJSON, drawn as vectors. There is no tile server to pay for or rate limit.
 
+## Languages
+
+The interface is in Portuguese, English, Spanish, French, Dutch and German. Add `?lang=` with `pt`, `en`, `es`, `fr`, `nl` or `de` to the address to choose one, for example `index.html?lang=de`. Without it the app follows the browser's languages and falls back to Portuguese. The round button with the language code at the top right switches language and keeps the choice in the address, so a reload keeps it. All texts live in `js/i18n.js`, one dictionary per language with the same keys. City and airport names are not translated.
+
 ## Run it locally
 
 ES modules do not load from `file://`, so serve the folder:
@@ -75,6 +79,7 @@ js/flights-sim.js       simulated traffic used when there is no proxy
 js/weather.js           Open-Meteo grid requests and the demo field
 js/field.js             grid geometry and interpolation
 js/geo.js, colors.js    spherical helpers, color scales
+js/i18n.js              interface texts in six languages, language choice
 js/config.js            settings to edit before deploying
 worker/                 Cloudflare Worker for live flights
 sw.js, manifest         offline shell and install-as-app support
