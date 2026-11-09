@@ -131,6 +131,22 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .icon-btn.small { width: 34px; height: 34px; background: transparent; border-color: transparent; backdrop-filter: none; }
 .icon-btn.small:hover { background: rgba(255, 255, 255, 0.06); }
 
+/* Language switch: a native select laid invisibly over a round button showing the code. */
+.lang-btn { position: relative; font: 600 0.82rem/1 var(--font-c); letter-spacing: 0.04em; }
+.lang-btn select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  opacity: 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+.lang-btn:has(select:focus-visible) { outline: 2px solid var(--amber); outline-offset: 2px; }
+
 /* Dock: layers + timeline ------------------------------------------------ */
 
 .dock {
@@ -437,7 +453,7 @@ body:has(#qpc-back) .dock { bottom: calc(var(--gap) + 66px + var(--safe-b)); }
     left: auto;
     right: calc(var(--gap) + var(--safe-r));
     bottom: auto;
-    top: calc(var(--gap) + 110px + var(--safe-t));
+    top: calc(var(--gap) + 160px + var(--safe-t));
     width: 340px;
     padding: 16px 18px;
     border-width: 1px;

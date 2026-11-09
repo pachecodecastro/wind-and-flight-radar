@@ -41,12 +41,7 @@ export function intermediate(lat1, lon1, lat2, lon2, f) {
   return [deg(Math.atan2(z, Math.hypot(x, y))), deg(Math.atan2(y, x))];
 }
 
-const POINTS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO'];
-
-// Portuguese compass point for a bearing (O = oeste).
-export function compassPoint(bearing) {
-  return POINTS[Math.round((((bearing % 360) + 360) % 360) / 22.5) % 16];
-}
+// Compass point names live in i18n.js (they differ by language).
 
 export function wrapLon(lon) {
   return ((lon + 540) % 360) - 180;

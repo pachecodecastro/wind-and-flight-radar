@@ -1,13 +1,14 @@
 import { CONFIG } from './config.js';
 import { SCALES, cssGradient } from './colors.js';
 import { makeGrid, windFrom } from './field.js';
-import { compassPoint, distanceKm, wrapLon } from './geo.js';
+import { distanceKm, wrapLon } from './geo.js';
 import { CITIES } from './cities.js';
 import { loadBasemap } from './basemap.js';
 import { fetchLiveField, fetchCityForecasts, makeDemoField } from './weather.js';
 import { WindLayer } from './wind-layer.js';
 import { FlightLayer, fetchLiveFlights } from './flights.js';
 import { FlightSimulator, airportName, aircraftName } from './flights-sim.js';
+import { t, fmt, compass, getLang, setLang, onLangChange } from './i18n.js';
 
 const STANDALONE = !!window.__STANDALONE__;
 const FORCE_DEMO = (() => {
@@ -18,10 +19,6 @@ const LIVE_RETRY_MS = 120000; // after a failure, wait this long before trying O
 const LIVE_MIN_GAP_MS = 35000; // spacing between grid requests, keeps us inside 600 calls/minute
 
 const $ = (id) => document.getElementById(id);
-const nf = new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 0 });
-const nf1 = new Intl.NumberFormat('pt-PT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
 const state = {
   mode: 'wind',
@@ -161,7 +158,7 @@ function updateCities() {
     const el = c.marker.getElement()?.querySelector('.city-val');
     if (!el) return;
     const v = cityValue(c, idx);
-    el.textContent = Number.isFinite(v) ? (state.mode === 'wind' ? nf.format(v) : `${nf.format(v)}°`) : '–';
+    el.textContent = Number.isFinite(v) ? (state.mode === 'wind' ? fmt.int(v) : `${fmt.int(v)}°`) : '–';
   });
 }
 
@@ -184,9 +181,9 @@ function applyTime(force = true) {
   const d = new Date(fieldTime(i));
   const today = new Date();
   const sameDay = d.toDateString() === today.toDateString();
-  $('time-day').textContent = sameDay ? 'hoje' : `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
-  $('time-hour').textContent = `${String(d.getHours()).padStart(2, '0')}:00`;
-  $('time-rel').textContent = i === 0 ? 'agora' : `daqui a ${i} h`;
+  $('time-day').textContent = sameDay ? t('today') : fmt.day(d);
+  $('time-hour').textContent = fmt.hour(d);
+  $('time-rel').textContent = i === 0 ? t('now') : t('in_hours', { n: fmt.int(i) });
   slider.setAttribute('aria-valuetext', `${$('time-day').textContent}, ${$('time-hour').textContent}`);
   updateCities();
 }
@@ -201,7 +198,7 @@ function buildDayTicks() {
     if (i === 0 || d.getHours() !== 0) return;
     const tick = document.createElement('span');
     tick.style.left = `${(i / (times.length - 1)) * 100}%`;
-    tick.textContent = WEEKDAYS[d.getDay()];
+    tick.textContent = fmt.weekday(d);
     box.appendChild(tick);
   });
 }
@@ -214,7 +211,7 @@ function updateLegend() {
   scale.ticks.forEach((v, i) => {
     const s = document.createElement('span');
     s.style.left = `${((v - scale.min) / (scale.max - scale.min)) * 100}%`;
-    s.textContent = i === scale.ticks.length - 1 ? `${v} ${scale.unit}` : String(v);
+    s.textContent = i === scale.ticks.length - 1 ? `${fmt.int(v)} ${scale.unit}` : fmt.int(v);
     ticks.appendChild(s);
   });
 }
@@ -229,7 +226,7 @@ function setPlaying(on) {
   state.playing = on;
   const btn = $('btn-play');
   btn.classList.toggle('is-playing', on);
-  btn.setAttribute('aria-label', on ? 'Pausar a previsão' : 'Reproduzir a previsão');
+  btn.setAttribute('aria-label', t(on ? 'pause' : 'play'));
 }
 $('btn-play').addEventListener('click', () => {
   if (!state.field) return;
@@ -288,7 +285,7 @@ async function pollLiveFlights() {
     const radius = Math.min(250, Math.ceil(viewNm));
     if (viewNm > 250 && !warnedRadius) {
       warnedRadius = true;
-      toast('Os voos ao vivo aparecem num raio de 460 km do centro do mapa');
+      toast(t('radius_note'));
     }
     try {
       const list = await fetchLiveFlights(CONFIG.flightsProxy, c.lat, wrapLon(c.lng), radius, CONFIG.requestTimeoutMs);
@@ -299,7 +296,7 @@ async function pollLiveFlights() {
       state.liveFailures += 1;
       console.info('Proxy de voos indisponível:', err.message);
       if (state.liveFailures >= 3) {
-        toast('Sem ligação ao serviço de voos. A mostrar voos simulados.');
+        toast(t('flights_offline'));
         startSimulation();
         return;
       }
@@ -316,7 +313,7 @@ const sheet = $('sheet');
 
 function fmtAlt(ft) {
   if (ft == null) return ['–', ''];
-  return [`${nf.format(ft)} ft`, `${nf.format(ft * 0.3048)} m`];
+  return [`${fmt.int(ft)} ft`, `${fmt.int(ft * 0.3048)} m`];
 }
 
 function renderSheet(f) {
@@ -325,20 +322,18 @@ function renderSheet(f) {
   const typeName = aircraftName(f.type);
   $('f-sub').textContent = f.from && f.to
     ? `${airportName(f.from)} → ${airportName(f.to)}`
-    : typeName || 'Aeronave sem tipo indicado';
-  const [altA, altB] = f.onGround ? ['No solo', ''] : fmtAlt(f.alt);
+    : typeName || t('no_type');
+  const [altA, altB] = f.onGround ? [t('on_ground'), ''] : fmtAlt(f.alt);
   $('f-alt').innerHTML = `${altA}<small>${altB}</small>`;
-  $('f-gs').innerHTML = `${nf.format(f.gs)} kt<small>${nf.format(f.gs * 1.852)} km/h</small>`;
-  $('f-trk').innerHTML = `${String(Math.round(f.track) % 360).padStart(3, '0')}°<small>${compassPoint(f.track)}</small>`;
+  $('f-gs').innerHTML = `${fmt.int(f.gs)} kt<small>${fmt.int(f.gs * 1.852)} km/h</small>`;
+  $('f-trk').innerHTML = `${String(Math.round(f.track) % 360).padStart(3, '0')}°<small>${compass(f.track)}</small>`;
   const vr = f.vrate;
-  const vrText = vr == null ? '–' : `${vr > 0 ? '+' : ''}${nf.format(vr)} ft/min`;
-  const vrNote = vr == null ? '' : vr > 250 ? 'a subir' : vr < -250 ? 'a descer' : 'nivelado';
+  const vrText = vr == null ? '–' : `${vr > 0 ? '+' : ''}${fmt.int(vr)} ft/min`;
+  const vrNote = vr == null ? '' : t(vr > 250 ? 'climbing' : vr < -250 ? 'descending' : 'level');
   $('f-vr').innerHTML = `${vrText}<small>${vrNote}</small>`;
   $('f-type').innerHTML = `${f.type || '–'}<small>${f.reg || (typeName && typeName !== f.type ? typeName : '')}</small>`;
   $('f-sq').innerHTML = `${f.squawk || '–'}<small>${f.simulated ? '' : `ICAO ${String(f.id).toUpperCase()}`}</small>`;
-  $('f-source').textContent = f.simulated
-    ? 'Voo simulado para demonstração. Rotas e companhias plausíveis, posições inventadas.'
-    : 'Dados ADS-B ao vivo da rede adsb.lol. Origem e destino não fazem parte destes dados.';
+  $('f-source').textContent = t(f.simulated ? 'source_sim' : 'source_live');
 }
 
 function refreshSheet() {
@@ -377,14 +372,15 @@ map.on('click', (e) => {
   const lat = e.latlng.lat;
   const lon = wrapLon(e.latlng.lng);
   const s = wind.sampleAt(lat, lon);
-  const coord = `${nf1.format(Math.abs(lat))}° ${lat >= 0 ? 'N' : 'S'}, ${nf1.format(Math.abs(lon))}° ${lon >= 0 ? 'E' : 'O'}`;
+  const [hN, hS, hE, hW] = t('hemispheres');
+  const coord = `${fmt.one(Math.abs(lat))}° ${lat >= 0 ? hN : hS}, ${fmt.one(Math.abs(lon))}° ${lon >= 0 ? hE : hW}`;
   let body;
   if (s) {
     const speed = Math.hypot(s.u, s.v);
     const from = windFrom(s.u, s.v);
-    body = `<p class="pt-vals"><span><b>${nf.format(speed)}</b> km/h</span><span>de ${compassPoint(from)}</span><span><b>${nf.format(s.temp)}</b> °C</span></p>`;
+    body = `<p class="pt-vals"><span><b>${fmt.int(speed)}</b> km/h</span><span>${t('wind_from', { dir: compass(from) })}</span><span><b>${fmt.int(s.temp)}</b> °C</span></p>`;
   } else {
-    body = '<p class="pt-empty">Sem dados para este ponto. Aproxima-te da zona colorida.</p>';
+    body = `<p class="pt-empty">${t('no_data')}</p>`;
   }
   L.popup({ className: 'pt-popup', closeButton: false, offset: [0, -4], autoPan: false })
     .setLatLng(e.latlng)
@@ -397,21 +393,18 @@ map.on('click', (e) => {
 
 function updateStatus() {
   const parts = [];
-  if (state.weatherSource === 'live') parts.push('<span><i class="dot live"></i>Previsão ao vivo</span>');
-  else if (state.weatherSource === 'demo') parts.push('<span><i class="dot demo"></i>Previsão de demonstração</span>');
-  else parts.push('<span>A carregar a previsão</span>');
+  if (state.weatherSource === 'live') parts.push(`<span><i class="dot live"></i>${t('status_live')}</span>`);
+  else if (state.weatherSource === 'demo') parts.push(`<span><i class="dot demo"></i>${t('status_demo')}</span>`);
+  else parts.push(`<span>${t('loading')}</span>`);
   if (state.flightsOn) {
-    if (state.flightSource === 'live') parts.push(`<span><i class="dot ${state.liveFailures ? 'warn' : 'live'}"></i>Voos ao vivo</span>`);
-    else if (state.flightSource === 'sim') parts.push('<span><i class="dot demo"></i>Voos simulados</span>');
+    if (state.flightSource === 'live') parts.push(`<span><i class="dot ${state.liveFailures ? 'warn' : 'live'}"></i>${t('status_flights_live')}</span>`);
+    else if (state.flightSource === 'sim') parts.push(`<span><i class="dot demo"></i>${t('status_flights_sim')}</span>`);
   }
   $('status').innerHTML = parts.join(' ');
 
-  const demoNotes = [];
-  if (state.weatherSource === 'demo') demoNotes.push('a previsão mostrada é um campo de vento sintético (uma depressão no Atlântico), porque a Open-Meteo não está acessível daqui');
-  if (state.flightSource === 'sim') demoNotes.push('os aviões são simulados, porque não está configurado um proxy para os dados ADS-B');
-  $('info-mode').textContent = demoNotes.length
-    ? `Neste momento ${demoNotes.join(', e ')}. A barra de cima indica sempre o que é real e o que é demonstração.`
-    : 'Neste momento todos os dados são reais.';
+  const demoWeather = state.weatherSource === 'demo';
+  const demoFlights = state.flightSource === 'sim';
+  $('info-mode').textContent = t(demoWeather && demoFlights ? 'mode_both' : demoWeather ? 'mode_weather' : demoFlights ? 'mode_flights' : 'mode_real');
 }
 
 let toastTimer = null;
@@ -452,11 +445,34 @@ if (STANDALONE || !('geolocation' in navigator)) {
   locateBtn.addEventListener('click', () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => map.flyTo([pos.coords.latitude, pos.coords.longitude], 7, { duration: 1.2 }),
-      () => toast('Não foi possível obter a tua localização'),
+      () => toast(t('locate_failed')),
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
     );
   });
 }
+
+// ---------------------------------------------------------------------------
+// Language: the switch in the top bar redraws every text in place, without reloading data.
+
+const langSelect = $('lang-select');
+function showLang(code) {
+  langSelect.value = code;
+  $('lang-code').textContent = code.toUpperCase();
+}
+showLang(getLang());
+langSelect.addEventListener('change', () => setLang(langSelect.value));
+onLangChange((code) => {
+  showLang(code);
+  map.closePopup();
+  setPlaying(state.playing);
+  updateLegend();
+  updateStatus();
+  if (state.field) {
+    buildDayTicks();
+    applyTime();
+  }
+  refreshSheet();
+});
 
 // ---------------------------------------------------------------------------
 // Animation loop

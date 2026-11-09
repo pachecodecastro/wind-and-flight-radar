@@ -1,6 +1,6 @@
 // Service worker: keeps the app shell available offline. Weather and flight
 // requests always go to the network, so data is never served stale from here.
-const CACHE = 'rdv-shell-v1';
+const CACHE = 'rdv-shell-v2';
 const SHELL = [
   './',
   'index.html',
@@ -15,6 +15,7 @@ const SHELL = [
   'js/flights.js',
   'js/flights-sim.js',
   'js/geo.js',
+  'js/i18n.js',
   'js/weather.js',
   'js/wind-layer.js',
   'vendor/leaflet/leaflet.js',
