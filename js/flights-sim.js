@@ -7,7 +7,7 @@ const AIRPORTS = {
   LIS: ['Lisboa', 38.774, -9.134], OPO: ['Porto', 41.248, -8.681], FAO: ['Faro', 37.014, -7.966],
   FNC: ['Funchal', 32.697, -16.774], PDL: ['Ponta Delgada', 37.742, -25.698],
   MAD: ['Madrid', 40.472, -3.561], BCN: ['Barcelona', 41.297, 2.078], AGP: ['Málaga', 36.675, -4.499],
-  SVQ: ['Sevilha', 37.418, -5.893], BIO: ['Bilbau', 43.301, -2.911], LPA: ['Gran Canária', 27.932, -15.387],
+  SVQ: ['Sevilha', 37.418, -5.893], BIO: ['Bilbau', 43.301, -2.911], LPA: ['Grã-Canária', 27.932, -15.387],
   TFS: ['Tenerife Sul', 28.044, -16.573], CMN: ['Casablanca', 33.367, -7.59], RAK: ['Marraquexe', 31.607, -8.036],
   LHR: ['Londres Heathrow', 51.47, -0.454], LGW: ['Londres Gatwick', 51.153, -0.182], DUB: ['Dublin', 53.421, -6.27],
   CDG: ['Paris Charles de Gaulle', 49.009, 2.548], ORY: ['Paris Orly', 48.723, 2.379], AMS: ['Amesterdão', 52.31, 4.768],
