@@ -61,6 +61,8 @@ or `python3 -m http.server 8080`, then open http://localhost:8080. Add `?demo` t
 2. Set the Worker variable `ALLOWED_ORIGINS` to the sites that may use it.
 3. Put the Worker address in `flightsProxy` in `js/config.js`.
 
+On qpc.pt the app is served by the Quinto Ponto Cardeal site, which runs the same proxy at `/api/voos`, and `js/config.js` picks it up there automatically.
+
 The Worker accepts one route, `/point/{lat}/{lon}/{radius_nm}`, clamps the radius to 250 nautical miles and rejects anything else. If it stops answering, the app falls back to simulated flights after three failed attempts and tells the user.
 
 ## Single-file build
