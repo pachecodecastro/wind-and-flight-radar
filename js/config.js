@@ -3,7 +3,8 @@ export const CONFIG = {
   // Base URL of your flights proxy (see worker/flights-proxy.js), without a trailing slash.
   // Example: 'https://rdv-flights.your-account.workers.dev'
   // Leave empty to run the flight layer as a clearly labelled simulation.
-  flightsProxy: '',
+  // On qpc.pt the site itself serves the proxy at /api/voos, so flights are live there.
+  flightsProxy: typeof location !== 'undefined' && location.hostname === 'qpc.pt' ? '/api/voos' : '',
 
   // Initial view: [[south, west], [north, east]]
   startBounds: [[27, -30], [52, 8]],

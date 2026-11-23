@@ -1,6 +1,6 @@
 // Service worker: keeps the app shell available offline. Weather and flight
 // requests always go to the network, so data is never served stale from here.
-const CACHE = 'rdv-shell-v2';
+const CACHE = 'rdv-shell-v3';
 const SHELL = [
   './',
   'index.html',
@@ -41,7 +41,10 @@ self.addEventListener('activate', (event) => {
 // Same-origin files: serve from cache, refresh in the background.
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  const url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+  // A same-origin flights proxy (/api/...) must always go to the network.
+  if (url.pathname.startsWith('/api/')) return;
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {
       const cached = await cache.match(req);
