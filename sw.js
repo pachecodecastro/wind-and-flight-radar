@@ -1,6 +1,6 @@
 // Service worker: keeps the app shell available offline. Weather and flight
 // requests always go to the network, so data is never served stale from here.
-const CACHE = 'rdv-shell-v3';
+const CACHE = 'rdv-shell-v4';
 const SHELL = [
   './',
   'index.html',
@@ -27,7 +27,12 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache: 'reload' skips the browser's HTTP cache, so a new version never starts from old files.
+  event.waitUntil(
+    caches.open(CACHE)
+      .then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {
